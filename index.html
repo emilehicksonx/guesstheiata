@@ -20,13 +20,51 @@
     </style>
 </head>
 <body>
-    <h1>Welcome to Emile's travel game.</h1>
-    <h2>Where in the world do you want to go?</h2>
-    <form>
-        <input type="text"></input>
-        <input type="submit" value="Let's travel">
+    <h1>Country Suggester</h1>
+    <form onsubmit="return suggestCountry()">
+        <label for="description">Describe the place (e.g., somewhere hot, cold, etc.):</label><br>
+        <input type="text" id="description" name="description" required><br><br>
+        <input type="submit" value="Suggest a Country">
     </form>
 
-    <script src="script.js"></script>
+    <p id="result"></p>
+
+    <script>
+        async function suggestCountry() {
+            const description = document.getElementById('description').value;
+            const resultElement = document.getElementById('result');
+
+            // OpenAI API key (you'll need to replace this with your actual API key)
+            const apiKey = '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';
+            const apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+            // The prompt that will be sent to the ChatGPT model
+            const prompt = `Suggest a country based on this description: "${description}"`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 50
+                    })
+                });
+
+                const data = await response.json();
+                const countrySuggestion = data.choices[0].message.content;
+
+                resultElement.textContent = 'Suggested country: ' + countrySuggestion;
+            } catch (error) {
+                resultElement.textContent = 'Error: ' + error.message;
+            }
+
+            return false; // Prevents the page from refreshing
+        }
+    </script>
 </body>
 </html>
